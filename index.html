@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>레이저장비도감 v1.0</title>
+<style>
+:root {
+  --bg: #f8f9fa; --surface: #fff; --border: #e2e8f0; --text: #1a202c;
+  --text2: #4a5568; --text3: #718096; --primary: #3b82f6;
+  --candela: #0057a8; --competitor: #6b7280;
+  --tag-bg: #eef2ff; --tag-text: #3730a3;
+  --badge-500: #d97706; --badge-700: #7c3aed;
+  --badge-1000a: #059669; --badge-1000b: #0891b2;
+  --pulse-long: #dc2626; --pulse-qs: #9333ea; --pulse-pico: #0ea5e9;
+  --pulse-ipl: #f59e0b; --pulse-nafl: #10b981;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a; --surface: #1e293b; --border: #334155; --text: #f1f5f9;
+    --text2: #cbd5e1; --text3: #94a3b8; --tag-bg: #1e1b4b; --tag-text: #a5b4fc;
+    --candela: #60a5fa; --competitor: #9ca3af;
+  }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── Header ── */
+header { background: linear-gradient(135deg, #0057a8, #1d4ed8); color: #fff; padding: 20px 24px 16px; }
+header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+header p { font-size: 0.8rem; opacity: 0.75; margin-top: 4px; }
+.meta-bar { display: flex; gap: 16px; margin-top: 10px; font-size: 0.75rem; opacity: 0.7; }
+
+/* ── Filters ── */
+.filter-section { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 24px; position: sticky; top: 0; z-index: 10; }
+.filter-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.filter-label { font-size: 0.7rem; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; min-width: 52px; }
+.pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill {
+  padding: 4px 12px; border-radius: 999px; font-size: 0.72rem; cursor: pointer;
+  border: 1.5px solid var(--border); background: var(--bg); color: var(--text2);
+  transition: all 0.15s; white-space: nowrap; user-select: none;
+}
+.pill:hover { border-color: var(--primary); color: var(--primary); }
+.pill.active { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+.pill.all-pill { font-weight: 600; }
+
+.filter-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.divider { width: 1px; height: 24px; background: var(--border); }
+
+/* ── Stats bar ── */
+.stats-bar { padding: 10px 24px; font-size: 0.75rem; color: var(--text3); background: var(--bg); border-bottom: 1px solid var(--border); }
+.count-badge { display: inline-block; background: var(--primary); color: #fff; border-radius: 999px; padding: 1px 8px; font-weight: 700; font-size: 0.7rem; margin-right: 4px; }
+
+/* ── Grid ── */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; padding: 20px 24px; }
+
+/* ── Card ── */
+.card {
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px;
+  overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+.card.candela { border-left: 4px solid var(--candela); }
+.card.competitor { border-left: 4px solid #9ca3af; }
+.card.expanded { border-color: var(--primary); }
+
+.card-header { padding: 14px 16px 10px; }
+.brand-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.brand-name { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; }
+.brand-name.candela { color: var(--candela); }
+.brand-name.competitor { color: var(--text3); }
+.device-name { font-size: 1rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+
+/* ── Wavelength bars ── */
+.wl-bars { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0; }
+.wl-bar {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 600; color: #fff;
+}
+.wl-500 { background: var(--badge-500); }
+.wl-700 { background: var(--badge-700); }
+.wl-1000a { background: var(--badge-1000a); }
+.wl-1000b { background: var(--badge-1000b); }
+.wl-ipl { background: #f59e0b; }
+
+/* ── Pulse badges ── */
+.pulse-row { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; }
+.pulse-badge {
+  padding: 2px 8px; border-radius: 4px; font-size: 0.63rem; font-weight: 700; color: #fff;
+}
+.pulse-long_pulse { background: var(--pulse-long); }
+.pulse-qswitch { background: var(--pulse-qs); }
+.pulse-pico { background: var(--pulse-pico); }
+.pulse-ipl { background: var(--pulse-ipl); color: #1a1a1a; }
+.pulse-nafl { background: var(--pulse-nafl); }
+
+/* ── Indication chips ── */
+.ind-row { display: flex; flex-wrap: wrap; gap: 4px; }
+.ind-chip {
+  background: var(--tag-bg); color: var(--tag-text);
+  padding: 2px 7px; border-radius: 4px; font-size: 0.63rem; font-weight: 500;
+}
+
+/* ── Expand detail ── */
+.card-detail { display: none; padding: 0 16px 14px; border-top: 1px solid var(--border); margin-top: 10px; }
+.card.expanded .card-detail { display: block; }
+.detail-section { margin-top: 12px; }
+.detail-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--text3); letter-spacing: 0.05em; margin-bottom: 6px; }
+.feature-list { list-style: none; }
+.feature-list li { font-size: 0.75rem; color: var(--text2); padding: 2px 0; padding-left: 12px; position: relative; }
+.feature-list li::before { content: "·"; position: absolute; left: 0; color: var(--primary); font-weight: 700; }
+.notes-box { background: var(--bg); border-radius: 6px; padding: 8px 10px; font-size: 0.72rem; color: var(--text2); margin-top: 6px; }
+.intel-box { background: #fef3c7; border-radius: 6px; padding: 8px 10px; font-size: 0.72rem; color: #92400e; margin-top: 6px; }
+@media (prefers-color-scheme: dark) {
+  .intel-box { background: #292524; color: #fbbf24; }
+}
+.param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+.param-item { background: var(--bg); border-radius: 6px; padding: 6px 10px; }
+.param-key { font-size: 0.62rem; color: var(--text3); }
+.param-val { font-size: 0.78rem; font-weight: 600; color: var(--text); margin-top: 2px; }
+.src-line { font-size: 0.62rem; color: var(--text3); margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border); }
+
+/* ── Empty state ── */
+.empty { text-align: center; padding: 60px; color: var(--text3); font-size: 0.9rem; grid-column: 1/-1; }
+
+/* ── Legend ── */
+.legend { padding: 12px 24px; display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.68rem; color: var(--text3); border-top: 1px solid var(--border); }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔬 레이저장비도감</h1>
+  <p>파장·펄스모드·적응증·제조사별 분류 — 영업 현장 인텔 통합</p>
+  <div class="meta-bar">
+    <span>v1.0</span>
+    <span>최종 업데이트: 2026-08-06</span>
+    <span>총 <strong id="totalCount">0</strong>종</span>
+  </div>
+</header>
+
+<div class="filter-section">
+  <div class="filter-row" style="margin-bottom:8px">
+    <span class="filter-label">파장대</span>
+    <div class="pills" id="wl-pills"></div>
+  </div>
+  <div class="filter-row" style="margin-bottom:8px">
+    <span class="filter-label">펄스모드</span>
+    <div class="pills" id="pulse-pills"></div>
+  </div>
+  <div class="filter-row" style="margin-bottom:8px">
+    <span class="filter-label">적응증</span>
+    <div class="pills" id="ind-pills"></div>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">제조사</span>
+    <div class="pills" id="brand-pills"></div>
+    <div class="divider"></div>
+    <button class="pill" id="resetBtn" onclick="resetFilters()">전체 초기화</button>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <span class="count-badge" id="showCount">0</span>종 표시 중
+</div>
+
+<div class="grid" id="deviceGrid"></div>
+
+<div class="legend">
+  <span style="font-weight:700;color:var(--text2)">파장대:</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--badge-500)"></span>500대 (500–699nm)</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--badge-700)"></span>700대 (700–999nm)</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--badge-1000a)"></span>1000초반 (1000–1399nm)</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--badge-1000b)"></span>1000후반 (1400nm+)</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--pulse-ipl)"></span>IPL</span>
+  <span style="margin-left:8px;font-weight:700;color:var(--text2)">펄스:</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--pulse-long)"></span>롱펄스</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--pulse-qs)"></span>큐스위치</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--pulse-pico)"></span>피코</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--pulse-nafl)"></span>NAFL</span>
+</div>
+
+<script>
+const DATA = {"meta":{"version":"1.0","last_updated":"2026-08-06","description":"레이저장비도감 마스터 데이터 — 파장·펄스모드·적응증·제조사별 분류"},"devices":[{"id":"gmpp","name":"GentleMax Pro Plus","brand":"Candela","brand_category":"candela","wavelengths":[755,1064],"wavelength_labels":["755nm Alexandrite","1064nm Nd:YAG"],"wavelength_categories":["700대","1000초반"],"pulse_modes":["long_pulse"],"pulse_mode_labels":["롱펄스"],"indications":["depilation","vascular","pigment","toning","lifting"],"indication_labels":["제모","혈관","색소","토닝","리프팅"],"cooling":["DCD","Cryo7"],"spot_sizes_mm":[8,10,12,15,18,24],"fluence_range":{"min":5,"max":100,"unit":"J/cm²"},"pulse_width_range":{"min":0.25,"max":300,"unit":"ms"},"key_features":["듀얼 파장 싱글 핸드피스","DCD 동적 냉각 + Cryo7 외부 공랭","AIO(Accuracy in One) 파라미터 가이드","Genesis 토닝 12mm/15mm 지원","15mm+ 스팟 0.5ms 최소 펄스폭 제한"],"notes":"","source":"GMPP Clinical Education CLI103709KO-KR Rev.102","date_added":"2026-07-29","field_intel":""},{"id":"vbeam_perfecta","name":"Vbeam Perfecta","brand":"Candela","brand_category":"candela","wavelengths":[595],"wavelength_labels":["595nm PDL (Pulsed Dye Laser)"],"wavelength_categories":["500대"],"pulse_modes":["long_pulse"],"pulse_mode_labels":["롱펄스"],"indications":["vascular","scar","rosacea","acne"],"indication_labels":["혈관","흉터","홍조/주사","여드름/홍반"],"cooling":["DCD"],"spot_sizes_mm":[7,10,12],"fluence_range":{"min":3,"max":40,"unit":"J/cm²"},"pulse_width_range":{"min":1.5,"max":40,"unit":"ms"},"key_features":["595nm 단일파장 PDL — Candela 최초 개발(1988) 골든스탠다드","마이크로펄스 분할: 1.5ms=4개, 3~40ms=8개","6ms 기준 멍(자반) 발생 여부 결정","급여 적응증 2개: 화염상모반·혈관종(평생 6회)","595nm 항염효과 → 흉터 예방 성형외과 활용","주사(Rosacea) 1위 장비","캘리브레이션도 샷 소모 (샷당 과금 구조 유지 이유)"],"notes":"마취크림이 혈관 수축시킬 수 있어 혈관 시술 시 마취크림 주의. 홍조 1회 30만원대 수가 유지 중.","source":"Vbeam Perfecta Clinical Presentation PU01604KR_RevA + Advanced 교육 7/8","date_added":"2026-07-29","field_intel":"고은빛여성의원강동(월250건 출산): 제왕절개·갑상선흉터 효과 탁월. 차앤리성형외과: 난치성켈로이드 봉합 직후 사용."},{"id":"picoway","name":"PicoWay","brand":"Candela","brand_category":"candela","wavelengths":[532,730,785,1064],"wavelength_labels":["532nm KTP","730nm Ti:Sapphire","785nm Ti:Sapphire","1064nm Nd:YAG"],"wavelength_categories":["500대","700대","1000초반"],"pulse_modes":["pico"],"pulse_mode_labels":["피코"],"indications":["tattoo","pigment","toning","vascular_assist"],"indication_labels":["문신제거","색소","토닝","혈관보조"],"cooling":["없음 (핸드피스 자체 냉각 없음)"],"spot_sizes_mm":[2,3,4,6,8,10],"fluence_range":{"min":0.4,"max":10,"unit":"J/cm²"},"pulse_width_range":{"min":0.025,"max":0.075,"unit":"ns (피코초 범위)"},"key_features":["4파장 시스템 (532/730/785/1064nm)","730nm: 혈관 흡수도 낮아 혈관 부위 색소 치료 최적","Zoom HP(532/1064): 2~10mm 연속 다이얼 조절","Focus HP(730/785): 렌즈 교체형 (Ti:Sapphire 크리스탈)","MicroBeam / Resolve Fusion 532 (프락셔널)","피코슈어 한계 병원 타겟 → 신세계 경험 포지셔닝","532 전용 병원에서 돌아와야 하는 환자를 730으로 지킴"],"notes":"개원가에서 쉽게 쓰기엔 피코슈어가 유리. 적응증 한계 느낀 병원에 PicoWay 어필. 피부과 전문의 설계형 원장에게 적합. [빔 프로파일 검증 2026-08-04] Resolve 핸드피스의 정확한 클레임: '100개 스팟 간 에너지 균일 분포(array-level uniformity)' — 각 MTZ 내부 top-hat 아님. Resolve는 DOE 빔 스플리터 사용 → 물리 원칙상 입력 빔 프로파일(Gaussian) 그대로 복사. Resolve Fusion은 중앙 빔+환형 링(도넛형) — top-hat 반대. Vbeam은 JAAD 1996(PMID 8647964)에서 Gaussian-like 직접 확인. GentleMax는 광섬유 전달로 super-Gaussian에 가까울 수 있음(공식 비공개). ⚠️ '리졸브 top-hat' 주장은 기술적으로 부정확 — 의사에게 어필 시 array uniformity로 정정 필요.","source":"PicoWay Clinical Presentation CLI103803KO-KR + 유저교육 2026-07-03","date_added":"2026-07-29","field_intel":"532만 있는 병원엔 환자 돌려보내야 하는 케이스 많음 — 730 어필 포인트. 만만한 1064 Resolve 진입."},{"id":"nordlys","name":"Nordlys","brand":"Candela","brand_category":"candela","wavelengths":[400,530,555,645,1064,1550,1940],"wavelength_labels":["IPL PL400 (400-720nm)","IPL PR530 (530-750nm)","IPL VL555 (555-950nm)","IPL HRD645 (645-950nm)","Nd:YAG 1064nm","NAFL 1550nm","NAFL 1940nm"],"wavelength_categories":["500대","700대","1000초반","1000후반"],"pulse_modes":["ipl","long_pulse","nafl"],"pulse_mode_labels":["IPL(SWT)","롱펄스(Nd:YAG)","NAFL(프락셔널)"],"indications":["depilation","vascular","pigment","resurfacing","scar","onychomycosis","warts"],"indication_labels":["제모","혈관","색소","스킨리서페이싱","흉터","손발톱진균증","사마귀"],"cooling":["SoftCool 통합 냉각","사파이어 크리스탈 팁"],"spot_sizes_mm":[4,6,8,10,12,35],"fluence_range":{"min":5,"max":70,"unit":"J/cm² (NAFL: mJ/MTZ)"},"pulse_width_range":{"min":1,"max":40,"unit":"ms"},"key_features":["22가지 FDA 승인 적응증 — 단일 콘솔 최다","SWT® 듀얼 필터: 950nm+ 차단 (타사 800nm+ 누출 vs 차별점)","어플리케이터 교체형 — IPL·Nd:YAG·NAFL 전환","NAFL 1550(흉터) / 1940(색소+리서페이싱) 듀얼 파장","에너지↔펄스폭 연동 (Beginner) — Expert 모드에서만 독립 조정","임상 인텔리전스: 혈관 색·크기 입력 → 파라미터 자동 추천","손발톱진균증·사마귀 Nd:YAG 틈새 적응증"],"notes":"GUI 속도 느림. 어플리케이터 빠르게 교체 시 에러 발생. 환자에게 이름 전달성 낮음 → 희소성 어필 전략(광주 더퍼스트). [빔 프로파일] Nordlys 1940nm NAFL은 공식 문서에서 빔 프로파일 미공개. 다이오드 레이저 물리적 특성상 Gaussian 추정 — Lutronic Ultra가 top-hat을 차별화 포인트로 내세울 때 Candela 공식 대응 자료 없음. 필요 시 제조사에 직접 문의 필요.","source":"Nordlys Clinical Education CLI103771KO-KR + Advanced 교육 7/7~7/8 + 빔프로파일 리서치 2026-08-04","date_added":"2026-07-29","field_intel":"흉터 초기 Vbeam으로 붉은기 제거 후 Nordlys 1550 조합 효과 탁월. Nordlys Mini 저렴한 가격에 흉터치료 반응 나쁘지 않음. [8/3 Ultra 데모 대면] Ultra가 top-hat·리얼 툴리움·20W를 명시적으로 강조 — 다이오드 1940 약점 공략 의도. 반박 포인트: 1927nm vs 1940nm 파장차 임상 무의미, top-hat 우월성 임상 직접비교 RCT 없음, 실제 효과 동급 임상논문 다수."},{"id":"excel_v_plus","name":"Excel V+","brand":"Cutera","brand_category":"competitor","wavelengths":[532,1064],"wavelength_labels":["532nm KTP","1064nm Nd:YAG"],"wavelength_categories":["500대","1000초반"],"pulse_modes":["long_pulse"],"pulse_mode_labels":["롱펄스"],"indications":["vascular","pigment","rosacea","toning"],"indication_labels":["혈관","색소","홍조","토닝"],"cooling":["내부 냉각 (사파이어 팁)"],"spot_sizes_mm":[2,4,6,8,10,12,16],"fluence_range":{"min":3,"max":300,"unit":"J/cm²"},"pulse_width_range":{"min":0.3,"max":300,"unit":"ms"},"key_features":["532nm KTP + 1064nm Nd:YAG 듀얼 파장","혈관 전문 레이저 포지셔닝 (Genesis 원조 경쟁)","제네시스 토닝 원조 엑셀브이 — GMPP와 직접 경쟁","냉각 일체형 핸드피스"],"notes":"제네시스 원조 주장. GMPP와 Genesis 토닝에서 직접 경쟁. 일부 원장은 GMPP 효과가 더 좋다고 평가.","source":"필드 인텔 (Advanced 교육 7/7)","date_added":"2026-07-29","field_intel":"제네시스 원조인 엑셀브이보다 GMPP 효과 좋다는 원장도 있음."},{"id":"picosure_pro","name":"PicoSure Pro","brand":"Cynosure","brand_category":"competitor","wavelengths":[532,755,1064],"wavelength_labels":["532nm KTP","755nm Alexandrite","1064nm Nd:YAG"],"wavelength_categories":["500대","700대","1000초반"],"pulse_modes":["pico"],"pulse_mode_labels":["피코"],"indications":["tattoo","pigment","toning","resurfacing"],"indication_labels":["문신제거","색소","토닝","리서페이싱"],"cooling":["없음"],"spot_sizes_mm":[3,4,5,6,8],"fluence_range":{"min":0.5,"max":8,"unit":"J/cm²"},"pulse_width_range":{"min":0.375,"max":0.75,"unit":"ns"},"key_features":["개원가 접근성 높음 — 쉬운 UI","755nm Alexandrite 피코 (피코계 주류 파장)","Focus Lens Array (프락셔널 프레셔 웨이브)","피코슈어로 한계 느끼면 PicoWay로 업그레이드 타겟"],"notes":"개원가에서 쉽게 사용하기 좋음. 피코슈어 한계(파장 제한 등) 느끼면 PicoWay 전환 타겟.","source":"필드 인텔 (Advanced 교육 7/7)","date_added":"2026-07-29","field_intel":"개원가에서 쉽게 쓰기에는 피코슈어가 좋음 → 한계 느꼈을 때 PicoWay 신세계 경험."},{"id":"picoplus","name":"PicoPlus","brand":"Lutronic","brand_category":"competitor","wavelengths":[532,595,660,1064],"wavelength_labels":["532nm KTP","595nm 색소전용","660nm","1064nm Nd:YAG"],"wavelength_categories":["500대","700대","1000초반"],"pulse_modes":["pico","qswitch"],"pulse_mode_labels":["피코","큐스위치"],"indications":["tattoo","pigment","toning"],"indication_labels":["문신제거","색소","토닝"],"cooling":["없음"],"spot_sizes_mm":[2,3,4,6,8,10],"fluence_range":{"min":0.4,"max":8,"unit":"J/cm²"},"pulse_width_range":{"min":0.375,"max":10,"unit":"ns"},"key_features":["4파장 구성 (532/595/660/1064nm)","피코 + 큐스위치 모드 전환 가능","595nm 색소 전용 — 혈관 보조 차별점","국내 루트로닉 주력 피코 제품"],"notes":"","source":"필드 인텔","date_added":"2026-07-29","field_intel":""},{"id":"spectra_vRM","name":"Spectra vRM","brand":"Lutronic","brand_category":"competitor","wavelengths":[532,1064],"wavelength_labels":["532nm KTP","1064nm Nd:YAG"],"wavelength_categories":["500대","1000초반"],"pulse_modes":["qswitch"],"pulse_mode_labels":["큐스위치"],"indications":["tattoo","pigment","toning"],"indication_labels":["문신제거","색소","토닝"],"cooling":["없음"],"spot_sizes_mm":[2,3,4,5,6,7,8],"fluence_range":{"min":0.4,"max":10,"unit":"J/cm²"},"pulse_width_range":{"min":5,"max":20,"unit":"ns"},"key_features":["Hollywood Spectra — 국내 필링 토닝 1세대 스탠다드","큐스위치 Nd:YAG 국내 점유율 높음","토닝 계층: 피코 > 큐스위치 > 롱펄스"],"notes":"토닝 시장에서 피코에 밀리는 추세지만 여전히 높은 점유율. 기미에 열효과 적게 주는 게 원칙이지만 최근 피코+열효과 조합 트렌드도 등장.","source":"필드 인텔 (Advanced 교육 7/7)","date_added":"2026-07-29","field_intel":"Hollywood Spectra로도 불림. 국내 큐스위치 토닝의 표준으로 오랫동안 자리잡음."},{"id":"clarity_II","name":"Clarity II","brand":"Lutronic","brand_category":"competitor","wavelengths":[755,1064],"wavelength_labels":["755nm Alexandrite","1064nm Nd:YAG"],"wavelength_categories":["700대","1000초반"],"pulse_modes":["long_pulse"],"pulse_mode_labels":["롱펄스"],"indications":["depilation","vascular","pigment","toning"],"indication_labels":["제모","혈관","색소","토닝"],"cooling":["내부 냉각"],"spot_sizes_mm":[8,10,12,15,18,24],"fluence_range":{"min":5,"max":100,"unit":"J/cm²"},"pulse_width_range":{"min":0.5,"max":300,"unit":"ms"},"key_features":["755nm Alex + 1064nm Nd:YAG 듀얼 — GMPP 직접 경쟁","INTELLIGENT DELIVERY 지능형 파라미터 추천","MOSAIC 3D 프락셔널 병행 가능"],"notes":"GMPP와 스펙 유사. 직접 비교 경쟁 상황 많음.","source":"필드 인텔","date_added":"2026-07-29","field_intel":"라띠엔느의원·유달리의원·더퍼스트의원·엘리스의원·리즈온클리닉·리브의원·센텀스타의원·미앤미의원·미엘르의원·리노보의원 등 다수 사용 확인(7/28~7/30 마감보고). 클라리티2·클라리티프로 모두 루트로닉 계열. 가장 자주 만나는 GMPP 직접 경쟁 장비."},{"id":"elite_iq","name":"Elite iQ","brand":"Cynosure","brand_category":"competitor","wavelengths":[755,1064],"wavelength_labels":["755nm Alexandrite","1064nm Nd:YAG"],"wavelength_categories":["700대","1000초반"],"pulse_modes":["long_pulse"],"pulse_mode_labels":["롱펄스"],"indications":["depilation","vascular","pigment"],"indication_labels":["제모","혈관","색소"],"cooling":["Zimmer Cryo 외부 공랭"],"spot_sizes_mm":[8,10,12,15,18,24],"fluence_range":{"min":5,"max":100,"unit":"J/cm²"},"pulse_width_range":{"min":0.5,"max":300,"unit":"ms"},"key_features":["755nm Alex + 1064nm Nd:YAG 듀얼 — GMPP 직접 경쟁","Skintel 피부 색조 측정기 연동","옛 Cynosure Apogee+/Acclaim 후속"],"notes":"GMPP와 직접 경쟁. 외부 Zimmer 냉각은 GMPP DCD와 다른 방식.","source":"필드 인텔","date_added":"2026-07-29","field_intel":""},{"id":"m22_resurfx","name":"M22 + ResurFX","brand":"Lumenis","brand_category":"competitor","wavelengths":[515,560,590,615,695,755,1064,1565],"wavelength_labels":["IPL OPT 515-1200nm (필터별)","Nd:YAG 1064nm","ResurFX 1565nm NAFL"],"wavelength_categories":["500대","700대","1000초반","1000후반"],"pulse_modes":["ipl","long_pulse","nafl"],"pulse_mode_labels":["IPL(OPT)","롱펄스(Nd:YAG)","NAFL(ResurFX)"],"indications":["depilation","vascular","pigment","resurfacing","toning"],"indication_labels":["제모","혈관","색소","스킨리서페이싱","토닝"],"cooling":["내부 냉각 (OPT 콘택트 쿨링)"],"spot_sizes_mm":[6,8,10,15,35],"fluence_range":{"min":5,"max":60,"unit":"J/cm²"},"pulse_width_range":{"min":2,"max":35,"unit":"ms"},"key_features":["OPT(Optimal Pulse Technology) — 균일 펄스 IPL","ResurFX 1565nm NAFL (Nordlys 1550 경쟁)","다양한 IPL 필터로 적응증 커버 폭 넓음","국내 IPL 시장 점유율 높음"],"notes":"Nordlys의 IPL+NAFL 구조와 직접 경쟁. OPT vs SWT 기술 차이가 영업 포인트.","source":"필드 인텔","date_added":"2026-07-29","field_intel":""},{"id":"fotona_sp_dynamis","name":"SP Dynamis","brand":"Fotona","brand_category":"competitor","wavelengths":[1064,2940],"wavelength_labels":["1064nm Nd:YAG","2940nm Er:YAG"],"wavelength_categories":["1000초반","1000후반"],"pulse_modes":["long_pulse","qswitch","nafl"],"pulse_mode_labels":["롱펄스","큐스위치","어블레이티브/NAFL"],"indications":["lifting","resurfacing","vascular","pigment","toning"],"indication_labels":["리프팅","스킨리서페이싱","혈관","색소","토닝"],"cooling":["없음 (내부 Er:YAG 냉각 효과)"],"spot_sizes_mm":[4,6,8,10,12,15],"fluence_range":{"min":10,"max":300,"unit":"J/cm²"},"pulse_width_range":{"min":0.1,"max":100,"unit":"ms"},"key_features":["1064nm + 2940nm Er:YAG 듀얼 — 피부과+성형외과 올라운더","PIANO 모드: 초장파 1064 → 심부 가열 리프팅","Er:YAG 어블레이션: 피부 리서페이싱 높은 정밀도","4D 리프팅 프로토콜로 마케팅 활발"],"notes":"국내 리프팅 장비로 인기 높음. PIANO 모드 = 장파 Nd:YAG 리프팅. 캔델라와는 적응증 일부 겹치나 Er:YAG가 차별점.","source":"필드 인텔","date_added":"2026-07-29","field_intel":""},{"id":"mosaic_3d","name":"Mosaic 3D","brand":"Lutronic","brand_category":"competitor","wavelengths":[1550],"wavelength_labels":["1550nm Er:Glass NAFL"],"wavelength_categories":["1000후반"],"pulse_modes":["nafl"],"pulse_mode_labels":["NAFL(프락셔널)"],"indications":["resurfacing","scar","pores"],"indication_labels":["스킨리서페이싱","흉터","모공"],"cooling":["없음"],"spot_sizes_mm":[7,10,15,20],"fluence_range":{"min":10,"max":70,"unit":"mJ/MTZ"},"pulse_width_range":{"min":1,"max":10,"unit":"ms"},"key_features":["1550nm NAFL — Nordlys NAFL 직접 경쟁","국내 프락셔널 시장 꽤 잘 팔리는 편","3D 스캔 패턴 균일 조사"],"notes":"Nordlys NAFL 1550 대비 전용 프락셔널 장비. 프락셔널 경쟁에서 자주 언급됨.","source":"필드 인텔 (Advanced 교육 7/8)","date_added":"2026-07-29","field_intel":"프락셔널 쪽에서 꽤 잘 팔린다고 함 (Advanced 교육 7/8 언급)."},{"id":"apogee_elite","name":"Apogee Elite+","brand":"Cynosure","brand_category":"competitor","wavelengths":[755,1064],"wavelength_labels":["755nm Alexandrite","1064nm Nd:YAG"],"wavelength_categories":["700대","1000초반"],"pulse_modes":["long_pulse"],"pulse_mode_labels":["롱펄스"],"indications":["depilation","vascular","pigment"],"indication_labels":["제모","혈관","색소"],"cooling":["Zimmer Cryo 외부 공랭"],"spot_sizes_mm":[8,10,12,15,18,24],"fluence_range":{"min":5,"max":100,"unit":"J/cm²"},"pulse_width_range":{"min":0.5,"max":300,"unit":"ms"},"key_features":["755nm Alex + 1064nm Nd:YAG 듀얼 — GMPP 직접 경쟁","국내 제모 시장에서 가장 많이 깔린 경쟁 장비(필드 체감)","구형 아포지플러스(AGP) 포함 다수 설치 — 노후 교체 타겟"],"notes":"아포지·아포지플러스(AGP)·아포지+는 Cynosure 동계열. 구형(9300 등) 아직 다수 운용 중. GMPP와 파장·스팟 거의 동일 → 비교 질문 자주 받음.","source":"필드 인텔 (7/27~7/30 마감보고)","date_added":"2026-07-30","field_intel":"블리비센텀·더젠의원·리즈의원·리즈온클리닉·아르의원·블리비서면점·드라마101(악센토로 교체)·미담의원 등 다수 확인(7/27~7/30). [8/3] 블리비센텀(1대 운용)·리즈온클리닉. [8/5] 블리비김해·미미썸김해·뮤즈김해·샤인빔창원·센텀코어·홍&박. 국내 제모 시장 GMPP 최대 경쟁 장비. 구형 사용 병원 노후교체 타겟."},{"id":"lightsheer_duet","name":"LightSheer Duet","brand":"Lumenis","brand_category":"competitor","wavelengths":[805],"wavelength_labels":["805nm 다이오드"],"wavelength_categories":["700대"],"pulse_modes":["long_pulse"],"pulse_mode_labels":["롱펄스"],"indications":["depilation"],"indication_labels":["제모"],"cooling":["ChillTip 접촉 냉각","HS 핸드피스: 진공흡입"],"spot_sizes_mm":[9,22],"fluence_range":{"min":10,"max":100,"unit":"J/cm²"},"pulse_width_range":{"min":5,"max":400,"unit":"ms"},"key_features":["805nm 다이오드 — 제모 전용 단일파장","HS 핸드피스: 22×35mm 대형 스팟 + 진공흡입 → 넓은 부위 빠름","755nm Alex 대비 멜라닌 흡수 낮음 → 어두운 피부 상대적 안전","색소·혈관 적응증 없음 — GMPP 다기능 대비 한계 명확"],"notes":"GMPP 대비 단일파장·단일 적응증. 속도 강점이나 제모 외 확장 불가.","source":"필드 인텔 (7/30 마감보고 — 미플러스센텀·센텀연의원)","date_added":"2026-07-30","field_intel":"미플러스센텀: 라이트쉬어듀엣 사용 중. 센텀연의원: 루메니스 효과 불만 → GMPP 관심. 루메니스 다이오드 불만족 병원이 GMPP 전환 타겟."},{"id":"lutronic_ultra","name":"Ultra","brand":"Lutronic","brand_category":"competitor","wavelengths":[1927],"wavelength_labels":["1927nm Thulium NAFL"],"wavelength_categories":["1000후반"],"pulse_modes":["nafl"],"pulse_mode_labels":["NAFL(프락셔널)"],"indications":["resurfacing","pigment","pores"],"indication_labels":["스킨리서페이싱","색소","모공"],"cooling":["없음"],"spot_sizes_mm":[7,10,15],"fluence_range":{"min":5,"max":40,"unit":"mJ/MTZ"},"pulse_width_range":{"min":1,"max":10,"unit":"ms"},"key_features":["1927nm Thulium — Nordlys NAFL 1940nm 직접 경쟁","표피~얕은 진피 리서페이싱·표재성 색소 턴오버","Mosaic 3D(1550)와 세트 포지셔닝"],"notes":"Nordlys 1940nm과 파장·적응증 거의 동일. '리얼 툴리움 1927nm'·top-hat beam 강조가 주 세일즈 포인트 — 다이오드 1940인 Nordlys의 약점 찌름. [검증] top-hat 주장은 공식 PRweb·제품페이지·Practical Dermatology 등에서 명시 확인됨. 그러나 top-hat vs Gaussian 임상 우월성 직접 비교 RCT는 현재 없음 — '이론적 균일성=임상 우월'로 등치 불가. 1927nm vs 1940nm 파장차 임상 무의미. Nordlys Mini 경쟁 시: ① 1940nm 임상 효과 동급 논문 다수 ② Nordlys 2파장(1940+1550) 동시 운용 ③ top-hat 우월성 미입증으로 대응.","source":"필드 인텔 (7/28~8/3 마감보고 + 데모 비교)","date_added":"2026-07-30","field_intel":"미래로피부과: Lumenis M22(1550) 보유 + Lutronic Ultra 데모 중. Nordlys Mini 데모(백승철 부장 동행)와 직접 경쟁. [8/3 데모 비교] 울트라 주요 세일즈 포인트: 리얼 툴리움 1927 강조(다이오드 1940 약점 공략)·top-hat beam·최대 파워 20W(라셈드 프로 5W 대비 4배). 팁 4종(롤러 포함, 편평한 팁은 발모용). 롤러는 플라스틱 소모품, 알코올 관리 가능(환자마다 교체 불필요). 앰플·크림·팩 판매 연계(수익 모델). 스피드 가이드·커버리지 계산 기능(미니와 동일). 런칭 이력: 라셈드 프로(2017) → 울트라(2019). [8/4] 지움의원: PW 데모 후 다른 장비 구매 (장비명 미공개, 홈페이지 파악 불가)."},{"id":"fotona_qxmax","name":"QX-MAX","brand":"Fotona","brand_category":"competitor","wavelengths":[532,1064],"wavelength_labels":["532nm KTP (Q-switched)","1064nm Nd:YAG (Q-switched)"],"wavelength_categories":["500대","1000초반"],"pulse_modes":["qswitch"],"pulse_mode_labels":["큐스위치"],"indications":["pigment","toning","tattoo"],"indication_labels":["색소","토닝","문신제거"],"cooling":["없음 (외부 공랭 병행)"],"spot_sizes_mm":[2,3,4,5,6,8,10],"fluence_range":{"min":0.5,"max":10,"unit":"J/cm²"},"pulse_width_range":{"min":5,"max":20,"unit":"ns"},"key_features":["1064nm Q-스위치 Nd:YAG + 532nm KTP 듀얼 파장","선택적 옵션: 585nm·650nm 염료 모듈 추가 가능","나노초 펄스 기반 검증된 클래식 큐스위치 플랫폼","포토나 SMOOTH® 모드: 저에너지 다중 펄스 피부재생 모드"],"notes":"StarWalker(후속)의 선행 모델. 나노초 Q-스위치 검증 장비. 국내 피부과에 상당수 보급된 구형 플랫폼 — 노후 교체 타겟.","source":"필드 인텔 (사용자 제공, 2026-08-03)","date_added":"2026-08-03","field_intel":"[8/3] 노블레스피부과: QX-MAX 보유(스타워커 이전 구형). 구형 병원 노후교체 타겟 확인."},{"id":"fotona_starwalker","name":"StarWalker MaQX","brand":"Fotona","brand_category":"competitor","wavelengths":[532,585,650,1064],"wavelength_labels":["532nm KTP","585nm Dye","650nm Dye","1064nm Nd:YAG"],"wavelength_categories":["500대","1000초반"],"pulse_modes":["qswitch","pico"],"pulse_mode_labels":["큐스위치","피코"],"indications":["pigment","toning","tattoo","resurfacing"],"indication_labels":["색소","토닝","문신제거","스킨리서페이싱"],"cooling":["없음 (외부 공랭 병행)"],"spot_sizes_mm":[2,3,4,5,6,8,10],"fluence_range":{"min":0.5,"max":15,"unit":"J/cm²"},"pulse_width_range":{"min":0.1,"max":20,"unit":"ns"},"key_features":["ASP(Adaptive Structured Pulse) 기술 — 나노초·피코초 영역 하이브리드 펄스","QX-MAX 대비 에너지 정밀도 향상·주변 조직 손상 최소화","단일 핸드피스에서 4파장(532/585/650/1064nm) 전환","난치성 색소·문신을 더 잘게 분쇄 — 치료 횟수 단축 주장","FRAC3® 프락셔널 모드: 불균일 피부 리텍스처링"],"notes":"QX-MAX의 차세대 하이엔드 후속. [MaQX 기술 팩트체크 2026-08-06] MaQX = 마크로펄스 ~5ns Q-switch 안에 피코초 고피크파워 마이크로펄스 내장. Fotona 공식: '5ns Q-switch 펄스 안에 트릴리온분의 1초 단위 초단 버스트 트레인'. 즉, 진성 피코초 레이저(250~450ps 단일펄스)와 구조적으로 다름 — 나노초 포락선 내 피코 구조. PicoWay·PicoCare Majesty와 직접 펄스폭 비교 시 '동급 피코'로 말하면 오류.","source":"필드 인텔 (사용자 제공, 2026-08-03)","date_added":"2026-08-03","field_intel":"[8/3] 고은세상김양제피부과: StarWalker 보유 확인. 수요일 휴진 — 다음 미팅 예정."},{"id":"cynergy","name":"Cynergy (시너지)","brand":"Cynosure","brand_category":"competitor","wavelengths":[585,1064],"wavelength_labels":["585nm PDL (Pulsed Dye)","1064nm Nd:YAG"],"wavelength_categories":["500대","1000초반"],"pulse_modes":["long_pulse"],"pulse_mode_labels":["롱펄스"],"indications":["vascular","pigment"],"indication_labels":["혈관","색소"],"cooling":["DCD (Dynamic Cooling Device)"],"spot_sizes_mm":[5,7,10,12,15],"fluence_range":{"min":2.5,"max":160,"unit":"J/cm²"},"pulse_width_range":{"min":0.3,"max":300,"unit":"ms"},"key_features":["Multiplex™ 기술: 585nm PDL 조사 직후 1064nm Nd:YAG 연달아 조사 (단일 핸드피스)","PDL 단독 / Nd:YAG 단독 / Multiplex 모드 3가지 선택 가능","Multiplex 프리셋 8그룹: PDL 0.5~40ms × YAG 15~40ms 조합","Advanced Options: PDL 0.5~40ms, YAG 10~300ms 자유 설정","2005년 FDA Multiplex™ 승인 / 국내 수허 06-186호","PDL 출력: 0.5 J/cm² 단위 조절 / YAG 출력: 5 J/cm² 단위 조절","Delay 설정: Short 150ms / Med 250ms / Long 500ms / Extd 1sec"],"notes":"585nm PDL + 1064nm Nd:YAG 조합 혈관 치료 특화. Vbeam Perfecta(595nm PDL)와 파장대 유사 — 비교 질문 시 Vbeam은 595nm 단독 특화, Cynergy는 Multiplex™ 조합이 차별점. 구형 장비로 신규 설치보다 기존 운용 병원 위주.","source":"제품 스펙시트 (사용자 제공, 2026-08-03)","date_added":"2026-08-03","field_intel":""},{"id":"fotona_avalanche","name":"Avalanche (아발란체)","brand":"Fotona","brand_category":"competitor","wavelengths":[755,1064],"wavelength_labels":["755nm Alexandrite","1064nm Nd:YAG"],"wavelength_categories":["700대","1000초반"],"pulse_modes":["long_pulse"],"pulse_mode_labels":["롱펄스"],"indications":["depilation","vascular","pigment"],"indication_labels":["제모","혈관","색소"],"cooling":["미확인"],"spot_sizes_mm":[],"fluence_range":{"min":5,"max":100,"unit":"J/cm²"},"pulse_width_range":{"min":0.5,"max":300,"unit":"ms"},"key_features":["755nm Alex + 1064nm Nd:YAG 듀얼 파장 롱펄스 — GMPP 동일 파장 구성","Fotona 플랫폼 — QX-MAX·StarWalker와 동일 제조사"],"notes":"Fotona 제모 롱펄스 라인. 데이뷰의원에서 GMPP와 병행 운용 — GMPP가 메인(60~70%), 아발란체가 서브로 추정.","source":"필드 인텔 (사용자 제공, 2026-08-06)","date_added":"2026-08-06","field_intel":"데이뷰의원: GMPP + 아발란체 병행 운용. 하루 제모환자 100명 중 GMPP 비중 높음."},{"id":"pento","name":"펜토","brand":"미확인","brand_category":"competitor","wavelengths":[755,1064],"wavelength_labels":["755nm Alexandrite","1064nm Nd:YAG"],"wavelength_categories":["700대","1000초반"],"pulse_modes":["long_pulse"],"pulse_mode_labels":["롱펄스"],"indications":["depilation"],"indication_labels":["제모"],"cooling":["GCD 타입 (가스쿨링)"],"spot_sizes_mm":[],"fluence_range":{"min":1.7,"max":80,"unit":"J"},"pulse_width_range":{"min":0.25,"max":300,"unit":"ms"},"key_features":["755nm Alex + 1064nm Nd:YAG 듀얼 파장","Nd:YAG 최대 80J / Alex 최대 60J","GCD 타입 가스 냉각 (크라이오 유사)","펄스율: single ~ 10Hz","규격: 581×855×1299mm, 125kg"],"notes":"제조사 미확인. GMPP와 동일 파장(755+1064) 구성 제모 장비. 가스 냉각 방식은 GMPP Cryo7과 유사.","source":"필드 인텔 (사용자 제공, 2026-08-06)","date_added":"2026-08-06","field_intel":"휴먼피부과창원·스타피부과에서 제모용으로 사용 확인."},{"id":"bikini_irude","name":"비키니 (IRUDE)","brand":"이루다(IRUDE)","brand_category":"competitor","wavelengths":[808],"wavelength_labels":["808nm 다이오드"],"wavelength_categories":["700대"],"pulse_modes":["long_pulse"],"pulse_mode_labels":["롱펄스"],"indications":["depilation"],"indication_labels":["제모"],"cooling":["미확인"],"spot_sizes_mm":[],"fluence_range":{"min":5,"max":100,"unit":"J/cm²"},"pulse_width_range":{"min":5,"max":400,"unit":"ms"},"key_features":["808nm 다이오드 단일파장 — 국산 제모 전용","이루다(IRUDE) 제조 국산 장비"],"notes":"이루다는 국산 의료기기 제조사. 단일 다이오드라 Alex/Nd:YAG 복합 대비 적응증 제한. 저가 제모 시장 포지셔닝 — GMPP 비교 시 적응증 다양성 어필 가능.","source":"필드 인텔 (사용자 제공, 2026-08-06)","date_added":"2026-08-06","field_intel":"서울더빛의원·벨다드의원에서 제모 전환 후 사용 확인."},{"id":"nanolight_sudo","name":"나노라이트","brand":"수도그룹","brand_category":"competitor","wavelengths":[532,1064],"wavelength_labels":["532nm KTP (Q-switched)","1064nm Nd:YAG (Q-switched)"],"wavelength_categories":["500대","1000초반"],"pulse_modes":["qswitch"],"pulse_mode_labels":["큐스위치"],"indications":["pigment","toning"],"indication_labels":["색소","토닝"],"cooling":["미확인"],"spot_sizes_mm":[],"fluence_range":{"min":0.5,"max":8,"unit":"J/cm²"},"pulse_width_range":{"min":5,"max":20,"unit":"ns"},"key_features":["1064+532nm Q-switch Nd:YAG 국산","수도그룹 제조 — 피코라이트(피코라인)와 동일 제조사"],"notes":"수도그룹 Q-switch 라인. 피코라이트(피코)와 같은 제조사의 나노초 버전. 중저가 토닝 포지션.","source":"필드 인텔 (사용자 제공, 2026-08-06)","date_added":"2026-08-06","field_intel":"더고운의원에서 사용 확인."},{"id":"rubystar_bison","name":"루비스타","brand":"비손메디칼","brand_category":"competitor","wavelengths":[694],"wavelength_labels":["694nm Ruby (Q-switched)"],"wavelength_categories":["700대"],"pulse_modes":["qswitch"],"pulse_mode_labels":["큐스위치"],"indications":["pigment","tattoo"],"indication_labels":["색소","문신제거"],"cooling":["미확인"],"spot_sizes_mm":[],"fluence_range":{"min":0.5,"max":10,"unit":"J/cm²"},"pulse_width_range":{"min":20,"max":40,"unit":"ns"},"key_features":["694nm 루비 레이저 — Alex(755nm)보다 단파장, 멜라닌 흡수↑","비손메디칼 국산 Q-switch 루비레이저","청·녹색 문신 및 표재성 색소 병변 효과적"],"notes":"694nm은 Alex(755nm)보다 멜라닌 흡수계수 높아 색소 치료 이론적 강점. 국내 루비레이저 설치 수 적어 희소성 있음.","source":"필드 인텔 (사용자 제공, 2026-08-06)","date_added":"2026-08-06","field_intel":"화이트라인하얀피부과: 루비스타(694nm) + 피코마제스티 + 악센토N 조합 운용."},{"id":"lavitimax","name":"이래비티맥스","brand":"미확인","brand_category":"competitor","wavelengths":[1064,1320],"wavelength_labels":["1064nm Nd:YAG","1320nm Nd:YAG"],"wavelength_categories":["1000초반"],"pulse_modes":["long_pulse"],"pulse_mode_labels":["롱펄스"],"indications":["pigment","toning","resurfacing"],"indication_labels":["색소","토닝","피부재생"],"cooling":["미확인"],"spot_sizes_mm":[],"fluence_range":{"min":5,"max":50,"unit":"J/cm²"},"pulse_width_range":{"min":500,"max":650,"unit":"µs"},"key_features":["1064nm + 1320nm 듀얼 Nd:YAG","최대 40Hz 고속 반복","펄스폭 500~650µs — 색소·리프팅·토닝 복합 적응증","1320nm: 표피 손상 없이 진피 가열 → 리프팅·모공"],"notes":"1320nm는 물 흡수 증가로 표피 과열 없이 진피 가열 가능. 제조사 미확인. 색소+리프팅 복합 포지셔닝.","source":"필드 인텔 (사용자 제공, 2026-08-06)","date_added":"2026-08-06","field_intel":"서울더빛의원: 6개월 전 구매 확인."},{"id":"element_3wave","name":"엘레멘트 3파장","brand":"엘레메닉","brand_category":"competitor","wavelengths":[532,755,1064],"wavelength_labels":["532nm KTP","755nm Alexandrite","1064nm Nd:YAG"],"wavelength_categories":["500대","700대","1000초반"],"pulse_modes":["long_pulse"],"pulse_mode_labels":["롱펄스"],"indications":["depilation","vascular","pigment"],"indication_labels":["제모","혈관","색소"],"cooling":["미확인"],"spot_sizes_mm":[],"fluence_range":{"min":5,"max":100,"unit":"J/cm²"},"pulse_width_range":{"min":0.5,"max":300,"unit":"ms"},"key_features":["532(KTP)+755(Alex)+1064(Nd:YAG) 3파장 통합 롱펄스","KTP 532nm: Nd:YAG 1064nm를 KTP 결정 통과 → 532nm 변환","엘레메닉 국산 제조"],"notes":"국산 3파장 복합 플랫폼. GMPP(755+1064) 대비 532nm 추가로 혈관·표재 색소 커버. 중저가 다기능 포지셔닝.","source":"필드 인텔 (사용자 제공, 2026-08-06)","date_added":"2026-08-06","field_intel":"서울밸런스의원에서 사용 확인."},{"id":"sciton_halo","name":"Halo","brand":"Sciton","brand_category":"competitor","wavelengths":[1470,2940],"wavelength_labels":["1470nm 비박피 NAFL","2940nm Er:YAG 박피 프락셔널"],"wavelength_categories":["1000후반"],"pulse_modes":["nafl"],"pulse_mode_labels":["NAFL(혼합 프락셔널)"],"indications":["resurfacing","pigment","pores","scar"],"indication_labels":["스킨리서페이싱","색소","모공","흉터"],"cooling":["미확인"],"spot_sizes_mm":[],"fluence_range":{"min":5,"max":50,"unit":"mJ/MTZ"},"pulse_width_range":{"min":1,"max":10,"unit":"ms"},"key_features":["1470nm(비박피) + 2940nm Er:YAG(박피) 동시 조사 — 혼합 프락셔널(Hybrid Fractional)","2940nm: 표피 재생·결 개선 (ablative)","1470nm: 진피 콜라겐 재생 (non-ablative)","단일 패스로 표피+진피 동시 치료"],"notes":"Nordlys NAFL(1550+1940nm) 조합과 적응증 유사. Halo는 박피(Er:YAG)+비박피 단일 핸드피스 동시 조사가 차별점. Sciton BBL(IPL)과 세트 포지셔닝.","source":"필드 인텔 (인박스 링크 제공 2026-08-05, 사용자 확인 2026-08-06)","date_added":"2026-08-06","field_intel":""},{"id":"ellipse_flex_ppt","name":"Flex PPT (I2PL)","brand":"Ellipse","brand_category":"competitor","wavelengths":[400,950],"wavelength_labels":["I2PL 400-950nm (이중 필터링)"],"wavelength_categories":["500대","700대"],"pulse_modes":["ipl"],"pulse_mode_labels":["IPL"],"indications":["vascular","pigment","depilation"],"indication_labels":["혈관","색소","제모"],"cooling":["미확인"],"spot_sizes_mm":[],"fluence_range":{"min":5,"max":50,"unit":"J/cm²"},"pulse_width_range":{"min":2,"max":30,"unit":"ms"},"key_features":["I2PL 2세대 이중 필터링 IPL","덴마크 Ellipse(구 DDD) 제조 — 현재 Candela 계열","구형 장비 — 신규 설치 드물고 기존 운용 위주"],"notes":"Ellipse는 Candela가 인수한 덴마크 의료기기사. Nordlys IPL SWT와 같은 계열사 제품. 구형 장비 운용 병원은 Nordlys 업그레이드 타겟으로 활용 가능.","source":"필드 인텔 (사용자 제공, 2026-08-06)","date_added":"2026-08-06","field_intel":"하얀피부과(창원): Ellipse Flex PPT 보유. 대리점 담당 별도(대리점명 미확인)."},{"id":"picocare_majesty","name":"PicoCare Majesty (피코케어 마제스티)","brand":"원텍(Wontech)","brand_category":"competitor","wavelengths":[532,595,660,1064],"wavelength_labels":["532nm KTP","595nm 다이 핸드피스","660nm 다이 핸드피스","1064nm Nd:YAG"],"wavelength_categories":["500대","1000초반"],"pulse_modes":["pico"],"pulse_mode_labels":["피코"],"indications":["pigment","toning","tattoo"],"indication_labels":["색소","토닝","문신제거"],"cooling":["미확인"],"spot_sizes_mm":[],"fluence_range":{"min":0.5,"max":500,"unit":"mJ"},"pulse_width_range":{"min":0.19,"max":0.25,"unit":"ns (피코초 범위)"},"key_features":["1064nm: 250ps (2GW 피크파워, 최대 500mJ) — 국산 피코 최고속","532nm: 190ps (SHG 특성상 1064 대비 단축)","595nm·660nm: 다이 핸드피스 — 펄스폭 공식 미발표","원텍(Wontech) 제조, MFDS 2021.7 / FDA 2022.1 승인","기존 피코케어(450ps) 대비 펄스폭 45% 단축, 피크파워 50% 향상"],"notes":"[팩트체크 2026-08-06] '250ps 4파장 전부' 주장은 마케팅 과장. 실제: 1064nm=250ps(확인), 532nm=190ps(확인), 595/660nm=공식 미발표(물리적으로 다이 매질 특성상 펄스 늘어날 가능성 높음). PicoWay와 비교 시: PW 1064nm~450ps vs Majesty 250ps — 1064nm에서 Majesty가 빠름. PW 785nm vs Majesty 595/660nm — 직접 비교 불가(공식 스펙 없음).","source":"딥서치 팩트체크 (JKSLMS 개발논문·원텍 공식·FDA 승인 자료, 2026-08-06)","date_added":"2026-08-06","field_intel":"화이트라인하얀피부과: 루비스타(694nm) + 피코마제스티 + 악센토N 조합 운용."}]};
+const devices = DATA.devices;
+
+// ── 필터 상태 ──
+const filters = { wl: 'all', pulse: 'all', ind: 'all', brand: 'all' };
+
+// ── 옵션 집합 ──
+const wlCats = ['500대', '700대', '1000초반', '1000후반'];
+const pulseModes = [...new Set(devices.flatMap(d => d.pulse_modes))];
+const indCats = [...new Set(devices.flatMap(d => d.indications))];
+const indLabels = {};
+devices.forEach(d => d.indications.forEach((k,i) => { indLabels[k] = d.indication_labels[i]; }));
+const brands = [...new Set(devices.map(d => d.brand))];
+
+const pulseLabel = { long_pulse:'롱펄스', qswitch:'큐스위치', pico:'피코', ipl:'IPL', nafl:'NAFL' };
+const wlClass = { '500대':'wl-500','700대':'wl-700','1000초반':'wl-1000a','1000후반':'wl-1000b','IPL':'wl-ipl' };
+
+// ── wavelength → category helper ──
+function wlToCategories(wl) {
+  if (wl < 500) return ['500대'];
+  if (wl < 700) return ['500대'];
+  if (wl < 1000) return ['700대'];
+  if (wl < 1400) return ['1000초반'];
+  return ['1000후반'];
+}
+
+// ── 필 생성 ──
+function makePills(containerId, items, key, labelFn) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  const allBtn = document.createElement('button');
+  allBtn.className = 'pill all-pill active'; allBtn.textContent = '전체'; allBtn.dataset.val = 'all';
+  allBtn.onclick = () => setFilter(key, 'all', containerId);
+  el.appendChild(allBtn);
+  items.forEach(item => {
+    const btn = document.createElement('button');
+    btn.className = 'pill'; btn.textContent = labelFn(item); btn.dataset.val = item;
+    btn.onclick = () => setFilter(key, item, containerId);
+    el.appendChild(btn);
+  });
+}
+
+function setFilter(key, val, containerId) {
+  filters[key] = val;
+  document.querySelectorAll('#' + containerId + ' .pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.val === val);
+  });
+  render();
+}
+
+function resetFilters() {
+  Object.keys(filters).forEach(k => filters[k] = 'all');
+  ['wl-pills','pulse-pills','ind-pills','brand-pills'].forEach(id => {
+    document.querySelectorAll('#' + id + ' .pill').forEach(p => {
+      p.classList.toggle('active', p.dataset.val === 'all');
+    });
+  });
+  render();
+}
+
+// ── 카드 HTML ──
+function cardHTML(d) {
+  const isCandelaClass = d.brand_category === 'candela' ? 'candela' : 'competitor';
+
+  // wavelength bars — use device's own wavelength_categories
+  const wlCatSet = [...new Set(d.wavelength_categories)];
+  const wlBars = wlCatSet.map(cat => {
+    const cls = wlClass[cat] || 'wl-ipl';
+    // find matching wavelength labels
+    const matchLabels = d.wavelength_labels.filter((_,i) => {
+      const w = d.wavelengths[i];
+      if (!w) return false;
+      if (cat === '500대') return w >= 400 && w < 700;
+      if (cat === '700대') return w >= 700 && w < 1000;
+      if (cat === '1000초반') return w >= 1000 && w < 1400;
+      if (cat === '1000후반') return w >= 1400;
+      return false;
+    });
+    const label = matchLabels.length > 0 ? matchLabels[0].split(' ')[0] : cat;
+    return `<span class="wl-bar ${cls}">${label}</span>`;
+  }).join('');
+
+  // IPL/NAFL extra bars
+  const extraBars = d.pulse_modes.includes('ipl') ? '<span class="wl-bar wl-ipl">IPL(SWT)</span>' : '';
+
+  const pulseBadges = d.pulse_modes.map(p =>
+    `<span class="pulse-badge pulse-${p}">${pulseLabel[p] || p}</span>`
+  ).join('');
+
+  const indChips = d.indication_labels.map(l => `<span class="ind-chip">${l}</span>`).join('');
+
+  const features = (d.key_features || []).map(f => `<li>${f}</li>`).join('');
+  const notes = d.notes ? `<div class="notes-box">📝 ${d.notes}</div>` : '';
+  const intel = d.field_intel ? `<div class="intel-box">🔍 현장 인텔: ${d.field_intel}</div>` : '';
+
+  const params = `
+    <div class="param-grid">
+      ${d.spot_sizes_mm ? `<div class="param-item"><div class="param-key">스팟사이즈</div><div class="param-val">${d.spot_sizes_mm.join(', ')}mm</div></div>` : ''}
+      ${d.fluence_range ? `<div class="param-item"><div class="param-key">플루언스</div><div class="param-val">${d.fluence_range.min}~${d.fluence_range.max} ${d.fluence_range.unit}</div></div>` : ''}
+      ${d.pulse_width_range ? `<div class="param-item"><div class="param-key">펄스폭</div><div class="param-val">${d.pulse_width_range.min}~${d.pulse_width_range.max} ${d.pulse_width_range.unit}</div></div>` : ''}
+      ${d.cooling ? `<div class="param-item"><div class="param-key">냉각</div><div class="param-val">${d.cooling.join(', ')}</div></div>` : ''}
+    </div>
+  `;
+
+  return `
+    <div class="card ${isCandelaClass}" data-id="${d.id}" onclick="toggleCard('${d.id}')">
+      <div class="card-header">
+        <div class="brand-row">
+          <span class="brand-name ${isCandelaClass}">${d.brand}</span>
+        </div>
+        <div class="device-name">${d.name}</div>
+        <div class="wl-bars" style="margin-top:8px">${wlBars}${extraBars}</div>
+        <div class="pulse-row">${pulseBadges}</div>
+        <div class="ind-row">${indChips}</div>
+      </div>
+      <div class="card-detail">
+        <div class="detail-section">
+          <div class="detail-label">핵심 스펙</div>
+          ${params}
+        </div>
+        ${features ? `<div class="detail-section"><div class="detail-label">주요 특징</div><ul class="feature-list">${features}</ul></div>` : ''}
+        ${notes}
+        ${intel}
+        <div class="src-line">출처: ${d.source} | 등록: ${d.date_added}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ── 필터 적용 ──
+function filteredDevices() {
+  return devices.filter(d => {
+    if (filters.wl !== 'all' && !d.wavelength_categories.includes(filters.wl)) return false;
+    if (filters.pulse !== 'all' && !d.pulse_modes.includes(filters.pulse)) return false;
+    if (filters.ind !== 'all' && !d.indications.includes(filters.ind)) return false;
+    if (filters.brand !== 'all' && d.brand !== filters.brand) return false;
+    return true;
+  });
+}
+
+// ── 렌더 ──
+function render() {
+  const list = filteredDevices();
+  const grid = document.getElementById('deviceGrid');
+  document.getElementById('showCount').textContent = list.length;
+  if (list.length === 0) {
+    grid.innerHTML = '<div class="empty">조건에 맞는 장비가 없습니다. 필터를 바꿔보세요.</div>';
+    return;
+  }
+  grid.innerHTML = list.map(cardHTML).join('');
+}
+
+function toggleCard(id) {
+  const el = document.querySelector('[data-id="' + id + '"]');
+  if (el) el.classList.toggle('expanded');
+}
+
+// ── 초기화 ──
+document.getElementById('totalCount').textContent = devices.length;
+makePills('wl-pills', wlCats, 'wl', x => x);
+makePills('pulse-pills', pulseModes, 'pulse', x => pulseLabel[x] || x);
+makePills('ind-pills', indCats, 'ind', x => indLabels[x] || x);
+makePills('brand-pills', brands, 'brand', x => x);
+render();
+</script>
+</body>
+</html>
